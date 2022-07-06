@@ -1,0 +1,54 @@
+name: Sync repositories daily
+on:
+  # push:
+  #   branches:
+  #     - main
+  schedule:
+    - cron: "15 2 * * *"
+
+jobs:
+  update_external_sentinel_fork_gh:
+    # gh repo sync calls the built-in sync functionality of github for forked repositories
+    # https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/syncing-a-fork
+    # using this functionality does not require the action to clone the upstream repository nor the destination repository
+    # this can only act upon a forked repository
+    # this should be used with public repositories that need to be kept in sync
+    # the GH_TOKEN must be provided a secret, either in the repository or at the organization level
+    name: sync master to master using gh cli
+    runs-on: ubuntu-latest
+    steps:
+      - run: gh repo sync mindstream-it/Azure-Sentinel --source Azure/Azure-Sentinel --branch master
+        env:
+          GH_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+
+  update_external_sentinel_fork_matrix:
+    # this uses the TobKed/github-forks-sync-action@master action which will clone the upstream repository and push
+    # to the destination repository
+    # this requires additional time to clone and push
+    # the GH_TOKEN must be provided a secret, either in the repository or at the organization level
+    # you can keep branches within the same repository in sync if both upstream_repository and target_repository are the same
+    name: sync forks using action with matrix
+    strategy:
+      matrix:
+        repositories:
+          # - upstream_repository: mindstream-it/Azure-Sentinel
+          #   upstream_branch: master
+          #   target_repository: mindstream-it/Azure-Sentinel
+          #   target_branch: stable
+          - upstream_repository: quantum-sec/infrastructure-modules-customer
+            upstream_branch: master
+            target_repository: mindstream-it/infrastructure-modules
+            target_branch: main
+
+    # sync master to stable
+    runs-on: ubuntu-latest
+    steps:
+      - uses: TobKed/github-forks-sync-action@master
+        with:
+          github_token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+          upstream_repository: ${{ matrix.repositories.upstream_repository }}
+          upstream_branch: ${{ matrix.repositories.upstream_branch }}
+          target_repository: ${{ matrix.repositories.target_repository }}
+          target_branch: ${{ matrix.repositories.target_branch }}
+          force: false
+          tags: true
