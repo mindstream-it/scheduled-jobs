@@ -37,7 +37,7 @@ jobs:
           #   target_branch: stable
           - upstream_repository: quantum-sec/infrastructure-modules-customer
             upstream_branch: master
-            target_repository: mindstream-it/infrastructure-modules
+            target_repository: ${{ github.repository_owner }}/infrastructure-modules
             target_branch: main
 
     # sync master to stable
