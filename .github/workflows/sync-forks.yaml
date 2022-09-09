@@ -1,10 +1,11 @@
 name: Sync repositories daily
 on:
-  # push:
-  #   branches:
-  #     - main
+  push:
+    branches:
+      - main
   schedule:
-    - cron: "15 2 * * *"
+    - cron: "*/5 * * * *"
+    # - cron: "15 2 * * *"
 
 jobs:
   update_external_sentinel_fork_gh:
@@ -22,6 +23,11 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
           TARGET_REPOSITORY: ${{ github.repository_owner }}/Azure-Sentinel
           UPSTREAM_REPOSITORY: Azure/Azure-Sentinel
+      # - run: gh repo sync "${TARGET_REPOSITORY}" --source "${UPSTREAM_REPOSITORY}" --branch master
+      #   env:
+      #     GH_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+      #     TARGET_REPOSITORY: ${{ github.repository_owner }}/Azure-Sentinel
+      #     UPSTREAM_REPOSITORY: Azure/Azure-Sentinel
 
   update_external_sentinel_fork_matrix:
     # this uses the TobKed/github-forks-sync-action@master action which will clone the upstream repository and push
@@ -45,6 +51,10 @@ jobs:
             upstream_branch: master
             target_repository: ${{ github.repository_owner }}/infrastructure-live
             target_branch: main
+          - upstream_repository: Azure/Azure-Sentinel
+            upstream_branch: master
+            target_repository: ${{ github.repository_owner }}/Azure-Sentinel
+            target_branch: quantum
 
     # sync master to stable
     runs-on: ubuntu-latest
