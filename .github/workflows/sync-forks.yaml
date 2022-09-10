@@ -4,8 +4,8 @@ on:
     branches:
       - main
   schedule:
-    - cron: "*/5 * * * *"
-    # - cron: "15 2 * * *"
+    # - cron: "*/5 * * * *"
+    - cron: "15 2 * * *"
 
 jobs:
   update_external_sentinel_fork_gh:
@@ -43,28 +43,37 @@ jobs:
           #   upstream_branch: master
           #   target_repository: mindstream-it/Azure-Sentinel
           #   target_branch: stable
-          - upstream_repository: quantum-sec/infrastructure-modules-customer
-            upstream_branch: master
-            target_repository: ${{ github.repository_owner }}/infrastructure-modules
-            target_branch: main
-          - upstream_repository: quantum-sec/infrastructure-live-customer
-            upstream_branch: master
-            target_repository: ${{ github.repository_owner }}/infrastructure-live
-            target_branch: main
+          # - upstream_repository: quantum-sec/infrastructure-modules-customer
+          #   upstream_branch: master
+          #   target_repository: ${{ github.repository_owner }}/infrastructure-modules
+          #   target_branch: main
+          # - upstream_repository: quantum-sec/infrastructure-live-customer
+          #   upstream_branch: master
+          #   target_repository: ${{ github.repository_owner }}/infrastructure-live
+          #   target_branch: main
           - upstream_repository: Azure/Azure-Sentinel
             upstream_branch: master
             target_repository: ${{ github.repository_owner }}/Azure-Sentinel
             target_branch: quantum
 
     # sync master to stable
-    runs-on: ubuntu-latest
-    steps:
-      - uses: TobKed/github-forks-sync-action@master
-        with:
-          github_token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
-          upstream_repository: ${{ matrix.repositories.upstream_repository }}
-          upstream_branch: ${{ matrix.repositories.upstream_branch }}
-          target_repository: ${{ matrix.repositories.target_repository }}
-          target_branch: ${{ matrix.repositories.target_branch }}
-          force: false
-          tags: true
+    # runs-on: ubuntu-latest
+    # steps:
+    uses: ./.github/workflows/git-merge-branch.yaml
+    with:
+      target_repository: ${{ matrix.repositories.target_repository }}
+      target_branch: ${{ matrix.repositories.target_branch }}
+      upstream_repository: ${{ matrix.repositories.upstream_repository }}
+      upstream_branch: ${{ matrix.repositories.upstream_branch }}
+    secrets:
+      WORKFLOW_GITHUB_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+
+      # - uses: TobKed/github-forks-sync-action@master
+      #   with:
+      #     github_token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+      #     upstream_repository: ${{ matrix.repositories.upstream_repository }}
+      #     upstream_branch: ${{ matrix.repositories.upstream_branch }}
+      #     target_repository: ${{ matrix.repositories.target_repository }}
+      #     target_branch: ${{ matrix.repositories.target_branch }}
+      #     force: false
+      #     tags: true

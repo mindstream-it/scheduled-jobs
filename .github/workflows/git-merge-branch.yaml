@@ -1,0 +1,89 @@
+name: Reusable Merge
+
+on:
+  workflow_call:
+    inputs:
+      target_repository:
+        required: true
+        type: string
+      target_branch:
+        required: true
+        type: string
+      upstream_repository:
+        required: true
+        type: string
+      upstream_branch:
+        required: true
+        type: string
+    secrets:
+      WORKFLOW_GITHUB_TOKEN:
+        required: true
+
+jobs:
+  merge_branch:
+    name: merge branch
+    runs-on: ubuntu-latest
+    steps:
+      - name: blah
+        env:
+          GITHUB_TOKEN: ${{ secrets.WORKFLOW_GITHUB_TOKEN }}
+          TARGET_REPOSITORY: ${{ inputs.target_repository }}
+          TARGET_BRANCH: ${{ inputs.target_branch }}
+          UPSTREAM_REPOSITORY: ${{ inputs.upstream_repository }}
+          UPSTREAM_BRANCH: ${{ inputs.upstream_branch }}
+        run: |
+          set -ex -o pipefail
+
+          git config --global credential.helper 'cache --timeout=1800'
+          git credential-cache store <<_EOF_
+          protocol=https
+          host=github.com
+          username=x-access-token
+          password=${GITHUB_TOKEN}
+          _EOF_
+
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          TARGET_REPOSITORY_URL="https://github.com/$TARGET_REPOSITORY.git"
+          UPSTREAM_REPOSITORY_URL="https://github.com/$UPSTREAM_REPOSITORY.git"
+          TARGET_REPOSITORY_SAFE_NAME="${TARGET_REPOSITORY//\//_}"
+          TARGET_REPOSITORY_DIRECTORY="$(mktemp -d "$(basename "${TARGET_REPOSITORY_SAFE_NAME}").XXXX")"
+          echo -2
+          git clone --single-branch --branch="${TARGET_BRANCH}" "${TARGET_REPOSITORY_URL}" "${TARGET_REPOSITORY_DIRECTORY}" || true
+          echo -1
+          # function sync_branch() {
+            echo 1
+            # trap 'rm -rvf "${TARGET_REPOSITORY_DIRECTORY}"' return
+            echo 2
+
+            (
+              echo 3
+              cd "${TARGET_REPOSITORY_DIRECTORY}"
+              echo 4
+              git fetch origin "${TARGET_BRANCH}" || true
+              echo 5
+              git switch "${TARGET_BRANCH}"
+              echo 6
+              git remote add upstream "${UPSTREAM_REPOSITORY_URL}"
+              echo 7
+              git fetch upstream "${UPSTREAM_BRANCH}"
+              echo 8
+
+              if git merge-base --is-ancestor "upstream/${UPSTREAM_BRANCH}" "origin/${TARGET_BRANCH}"; then
+              echo 9
+                echo "merge not required"
+                exit 0
+              fi;
+              echo 10
+
+              git merge --no-edit "upstream/${UPSTREAM_BRANCH}"
+              echo 11
+              git push -u origin "${TARGET_BRANCH}"
+              echo 12
+            )
+          # }
+
+          echo 0
+          # sync_branch
+          rm -rvf "${TARGET_REPOSITORY_DIRECTORY}"
