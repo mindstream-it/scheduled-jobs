@@ -23,11 +23,11 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
           TARGET_REPOSITORY: ${{ github.repository_owner }}/Azure-Sentinel
           UPSTREAM_REPOSITORY: Azure/Azure-Sentinel
-      # - run: gh repo sync "${TARGET_REPOSITORY}" --source "${UPSTREAM_REPOSITORY}" --branch master
-      #   env:
-      #     GH_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
-      #     TARGET_REPOSITORY: ${{ github.repository_owner }}/Azure-Sentinel
-      #     UPSTREAM_REPOSITORY: Azure/Azure-Sentinel
+      - run: gh repo sync "${TARGET_REPOSITORY}" --source "${UPSTREAM_REPOSITORY}" --branch master
+        env:
+          GH_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+          TARGET_REPOSITORY: quantum-sec/Azure-Sentinel
+          UPSTREAM_REPOSITORY: Azure/Azure-Sentinel
 
   update_external_sentinel_fork_matrix:
     # this uses the TobKed/github-forks-sync-action@master action which will clone the upstream repository and push
